@@ -1,4 +1,4 @@
-name: Label issues
+name: New application (issue)
 on:
   issues:
     types: 
@@ -9,9 +9,30 @@ jobs:
     permissions: 
       issues: write
     steps: 
-      - run: gh issue edit "$NUMBER" --add-label "$LABELS"
+      - name: "Add a responded label"
+        run: gh issue edit "$NUMBER" --add-label "$LABELS"
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
           GH_REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
-          LABELS: responded
+          LABELS: confirmed  
+      - name: "Send an email to the student"
+        uses: dawidd6/action-send-mail@v3.7.2
+        with:
+          server_address: mail.in.tum.de
+          server_port: 587
+          username: ${{SECRETS.UNAME}}
+          password: ${{SECRETS.PASSWORD}}
+          subject: "Confirmed: Request for thesis"
+          to: ${{github.event.issue.title}}
+          from: No-reply TUM DSE
+          body: |
+            Hello,
+
+            Thank you for your interest in writing a thesis with us. 
+            Your application has been successfully received. 
+            
+            We will evaluate your application and reach you in a week if we find any topic that matches your skills and interests.
+
+            Kind regards
+          ignore_cert: true
